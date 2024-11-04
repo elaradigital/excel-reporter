@@ -1,0 +1,28 @@
+{
+  "name": "excel-reporter-2",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run index.ts",
+    "lint": "eslint --fix ."
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "date-fns": "^4.1.0",
+    "exceljs": "^4.4.0",
+    "inquirer": "^12.0.1",
+    "superjson": "^2.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "@types/bun": "latest",
+    "eslint": "^9.14.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "globals": "^15.12.0",
+    "typescript-eslint": "^8.12.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "packageManager": "bun@1.1.34"
+}
