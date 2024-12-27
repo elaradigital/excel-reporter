@@ -1,4 +1,4 @@
-import { endOfDay, format, startOfDay } from "date-fns";
+import { addMinutes, endOfDay, format, startOfDay } from "date-fns";
 import ExcelJS from "exceljs";
 
 import { fitCellWidthToContent } from "../utils/fit-cell-width";
@@ -20,7 +20,7 @@ export const generateDailyJobPlanReport = async (
   const worksheet = workbook.addWorksheet(fileName);
 
   const workOrders = await getWorkOrders({
-    createdAt: { gte: startDate, lte: endDate },
+    dueDate: { gte: startDate, lte: endDate },
     status: { notIn: ["done", "cancelled"] },
   });
 
@@ -41,14 +41,22 @@ export const generateDailyJobPlanReport = async (
   ];
 
   for (const workOrder of workOrders) {
+    const timeReports = workOrder.timeReports;
+    const lastTimeReport = timeReports[timeReports.length - 1];
+
     worksheet.addRow({
       number: workOrder.number,
       title: workOrder.title,
       teams: workOrder.teams.map((t) => t.team.name).join(", "),
-      type: workOrder.type,
-      location: workOrder.location.name,
-      startedAt: workOrder.startedAt,
-      endedAt: workOrder.endedAt,
+      type: workOrder.categories.map((c) => c.name).join(", "),
+      location: workOrder.assets
+        .map(({ asset }) => asset.place?.name ?? "-")
+        .join(", "),
+      startedAt: lastTimeReport.startedAt,
+      endedAt: addMinutes(
+        lastTimeReport.startedAt,
+        lastTimeReport.durationMinutes
+      ),
       duration: workOrder.timeReports.reduce((acc, curr) => {
         return acc + curr.durationMinutes;
       }, 0),

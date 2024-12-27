@@ -8,6 +8,8 @@ export const fitCellWidthToContent = (worksheet: ExcelJS.Worksheet) => {
     const values = column.values ?? [];
 
     for (let j = 1; j < values.length; j += 1) {
+      if (!values[j]) continue;
+
       const columnLength = (values[j] as string).length;
       if (columnLength > maxLength) maxLength = columnLength;
     }

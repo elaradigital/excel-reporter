@@ -21,9 +21,11 @@ type WorkOrder = {
   startedAt: Date | null;
   endedAt: Date | null;
   location: { name: string };
+  categories: { name: string }[];
   teams: { team: { name: string } }[];
-  assets: { asset: { name: string } }[];
+  assets: { asset: { name: string; place?: { name: string } } }[];
   timeReports: {
+    startedAt: Date;
     description: string;
     durationMinutes: number;
     user: { name: string };
@@ -35,6 +37,7 @@ export const getWorkOrders = async (where: {
 }): Promise<WorkOrder[]> => {
   const serialized = SuperJSON.serialize({
     where,
+    orderBy: { createdAt: "desc" },
     select: {
       id: true,
       number: true,
@@ -47,10 +50,22 @@ export const getWorkOrders = async (where: {
       startedAt: true,
       endedAt: true,
       location: { select: { name: true } },
+      categories: { select: { name: true } },
       teams: { select: { team: { select: { name: true } } } },
-      assets: { select: { asset: { select: { name: true } } } },
-      timeReports: {
+      assets: {
         select: {
+          asset: {
+            select: {
+              name: true,
+              place: { select: { name: true } },
+            },
+          },
+        },
+      },
+      timeReports: {
+        orderBy: { startedAt: "desc" },
+        select: {
+          startedAt: true,
           description: true,
           durationMinutes: true,
           user: { select: { name: true } },

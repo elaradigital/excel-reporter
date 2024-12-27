@@ -1,5 +1,5 @@
 import { AxiosError } from "axios";
-import { getWeek } from "date-fns";
+import { endOfWeek, format, startOfWeek } from "date-fns";
 import inquirer from "inquirer";
 
 import { generateDailyCompletionReport } from "./scripts/daily-completion-report";
@@ -116,28 +116,22 @@ try {
   }
 
   if (reportType === "Weekly Report") {
-    const { week, year } = await inquirer.prompt([
+    const { startDate, endDate } = await inquirer.prompt([
       {
-        type: "number",
-        name: "week",
-        message: "Enter the week number (1-53):",
-        step: 1,
-        min: 1,
-        max: 53,
-        default: getWeek(new Date()),
+        type: "input",
+        name: "startDate",
+        message: "Enter the start date (YYYY-MM-DD):",
+        default: format(startOfWeek(new Date()), "yyyy-MM-dd"),
       },
       {
-        type: "number",
-        name: "year",
-        message: "Enter the year (YYYY):",
-        step: 1,
-        min: 1900,
-        max: 2100,
-        default: new Date().getFullYear(),
+        type: "input",
+        name: "endDate",
+        message: "Enter the end date (YYYY-MM-DD):",
+        default: format(endOfWeek(new Date()), "yyyy-MM-dd"),
       },
     ]);
 
-    await generateWeeklyReport(week, year);
+    await generateWeeklyReport(startOfWeek(startDate), endOfWeek(endDate));
   }
 
   console.log("✅ Report generated successfully!");

@@ -1,21 +1,22 @@
+import { addMinutes, format } from "date-fns";
 import ExcelJS from "exceljs";
 
 import { fitCellWidthToContent } from "../utils/fit-cell-width";
 import { formatCells } from "../utils/format-cells";
-import { getWeekRange } from "../utils/get-week-range";
 import { getWorkOrders } from "../utils/get-work-orders";
 
-export const generateWeeklyReport = async (week: number, year: number) => {
-  const { startDate, endDate } = getWeekRange(week, year);
-
-  const fileName = `Weekly Report (WK ${week}-${year})`;
+export const generateWeeklyReport = async (startDate: Date, endDate: Date) => {
+  const fileName = `Weekly Report (${format(
+    startDate,
+    "yyyy-MM-dd"
+  )} - ${format(endDate, "yyyy-MM-dd")})`;
   const fileExtension = "xlsx";
 
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet(fileName);
 
   const workOrders = await getWorkOrders({
-    createdAt: { gte: startDate, lte: endDate },
+    startedAt: { gte: startDate, lte: endDate },
   });
 
   worksheet.columns = [
@@ -39,18 +40,26 @@ export const generateWeeklyReport = async (week: number, year: number) => {
   ];
 
   for (const workOrder of workOrders) {
+    const timeReports = workOrder.timeReports;
+    const lastTimeReport = timeReports[timeReports.length - 1];
+
     worksheet.addRow({
       dueDate: workOrder.dueDate,
       number: workOrder.number,
       title: workOrder.title,
-      location: workOrder.location.name,
+      location: workOrder.assets
+        .map(({ asset }) => asset.place?.name ?? "-")
+        .join(", "),
       assets: workOrder.assets.map((a) => a.asset.name).join(", "),
-      startedAt: workOrder.startedAt,
-      endedAt: workOrder.endedAt,
+      startedAt: lastTimeReport.startedAt,
+      endedAt: addMinutes(
+        lastTimeReport.startedAt,
+        lastTimeReport.durationMinutes
+      ),
       duration: workOrder.timeReports.reduce((acc, curr) => {
         return acc + curr.durationMinutes;
       }, 0),
-      type: workOrder.type,
+      type: workOrder.categories.map((c) => c.name).join(", "),
       cmType: "NULL",
       failureCode: "NULL",
       frequency: (() => {
