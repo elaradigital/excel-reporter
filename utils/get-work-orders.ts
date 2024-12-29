@@ -21,7 +21,7 @@ type WorkOrder = {
   startedAt: Date | null;
   endedAt: Date | null;
   location: { name: string };
-  categories: { name: string }[];
+  categories: { category: { name: string } }[];
   teams: { team: { name: string } }[];
   assets: { asset: { name: string; place?: { name: string } } }[];
   timeReports: {
@@ -50,7 +50,7 @@ export const getWorkOrders = async (where: {
       startedAt: true,
       endedAt: true,
       location: { select: { name: true } },
-      categories: { select: { name: true } },
+      categories: { select: { category: { select: { name: true } } } },
       teams: { select: { team: { select: { name: true } } } },
       assets: {
         select: {
